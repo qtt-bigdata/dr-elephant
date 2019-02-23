@@ -17,15 +17,13 @@
 package org.apache.spark.deploy.history
 
 import java.io.InputStream
-import java.util.{Set => JSet, Properties, List => JList, HashSet => JHashSet, ArrayList => JArrayList}
+import java.util.{Properties, ArrayList => JArrayList, HashSet => JHashSet, List => JList, Set => JSet}
 
 import scala.collection.mutable
-
 import com.linkedin.drelephant.analysis.ApplicationType
 import com.linkedin.drelephant.spark.legacydata._
 import com.linkedin.drelephant.spark.legacydata.SparkExecutorData.ExecutorInfo
 import com.linkedin.drelephant.spark.legacydata.SparkJobProgressData.JobInfo
-
 import org.apache.spark.SparkConf
 import org.apache.spark.scheduler.{ApplicationEventListener, ReplayListenerBus, StageInfo}
 import org.apache.spark.storage.{RDDInfo, StorageStatus, StorageStatusListener, StorageStatusTrackingListener}
@@ -49,8 +47,10 @@ class SparkDataCollection extends SparkApplicationData {
   lazy val applicationEventListener = new ApplicationEventListener()
   lazy val jobProgressListener = new JobProgressListener(new SparkConf())
   lazy val environmentListener = new EnvironmentListener()
-  lazy val storageStatusListener = new StorageStatusListener()
-  lazy val executorsListener = new ExecutorsListener(storageStatusListener)
+//  lazy val storageStatusListener = new StorageStatusListener()
+//  lazy val executorsListener = new ExecutorsListener(storageStatusListener)
+  lazy val storageStatusListener = new StorageStatusListener(new SparkConf())
+  lazy val executorsListener = new ExecutorsListener(storageStatusListener, new SparkConf())
   lazy val storageListener = new StorageListener(storageStatusListener)
 
   // This is a customized listener that tracks peak used memory
@@ -164,10 +164,16 @@ class SparkDataCollection extends SparkApplicationData {
     if (_executorData == null) {
       _executorData = new SparkExecutorData()
 
-      for (statusId <- 0 until executorsListener.storageStatusList.size) {
+//      for (statusId <- 0 until executorsListener.storageStatusList.size) {
+//        val info = new ExecutorInfo()
+//
+//        val status = executorsListener.storageStatusList(statusId)
+
+      val  storageStatusList = executorsListener.activeStorageStatusList ++ executorsListener.deadStorageStatusList
+      for (statusId <- 0 until storageStatusList.size) {
         val info = new ExecutorInfo()
 
-        val status = executorsListener.storageStatusList(statusId)
+        val status = storageStatusList(statusId)
 
         info.execId = status.blockManagerId.executorId
         info.hostPort = status.blockManagerId.hostPort
@@ -178,14 +184,14 @@ class SparkDataCollection extends SparkApplicationData {
         info.memUsed = storageStatusTrackingListener.executorIdToMaxUsedMem.getOrElse(info.execId, 0L)
         info.maxMem = status.maxMem
         info.diskUsed = status.diskUsed
-        info.activeTasks = executorsListener.executorToTasksActive.getOrElse(info.execId, 0)
-        info.failedTasks = executorsListener.executorToTasksFailed.getOrElse(info.execId, 0)
-        info.completedTasks = executorsListener.executorToTasksComplete.getOrElse(info.execId, 0)
+        info.activeTasks = executorsListener.executorToTasksActive
+        info.failedTasks = executorsListener.executorToTasksFailed
+        info.completedTasks = executorsListener.executorToTasksComplete
         info.totalTasks = info.activeTasks + info.failedTasks + info.completedTasks
-        info.duration = executorsListener.executorToDuration.getOrElse(info.execId, 0L)
-        info.inputBytes = executorsListener.executorToInputBytes.getOrElse(info.execId, 0L)
-        info.shuffleRead = executorsListener.executorToShuffleRead.getOrElse(info.execId, 0L)
-        info.shuffleWrite = executorsListener.executorToShuffleWrite.getOrElse(info.execId, 0L)
+        info.duration = executorsListener.executorToDuration
+        info.inputBytes = executorsListener.executorToInputBytes
+        info.shuffleRead = executorsListener.executorToShuffleRead
+        info.shuffleWrite = executorsListener.executorToShuffleWrite
 
         _executorData.setExecutorInfo(info.execId, info)
       }

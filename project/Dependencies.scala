@@ -39,7 +39,7 @@ object Dependencies {
     hadoopVersion = System.getProperties.getProperty(HADOOP_VERSION)
   }
 
-  var sparkVersion = "1.4.0"
+  var sparkVersion = "2.1.1"
   if (System.getProperties.getProperty(SPARK_VERSION) != null) {
     sparkVersion = System.getProperties.getProperty(SPARK_VERSION)
   }
@@ -49,13 +49,17 @@ object Dependencies {
       ExclusionRule(organization = "com.typesafe.akka"),
       ExclusionRule(organization = "org.apache.avro"),
       ExclusionRule(organization = "org.apache.hadoop"),
-      ExclusionRule(organization = "net.razorvine")
+      ExclusionRule(organization = "net.razorvine"),
+      ExclusionRule(organization = "com.fasterxml.jackson.module"),
+      ExclusionRule(organization = "org.scala-lang")
       )
   } else {
     "org.apache.spark" % "spark-core_2.10" % sparkVersion excludeAll(
       ExclusionRule(organization = "org.apache.avro"),
       ExclusionRule(organization = "org.apache.hadoop"),
-      ExclusionRule(organization = "net.razorvine")
+      ExclusionRule(organization = "net.razorvine"),
+      ExclusionRule(organization = "com.fasterxml.jackson.module"),
+      ExclusionRule(organization = "org.scala-lang")
       )
   }
 
@@ -93,8 +97,11 @@ object Dependencies {
     "org.apache.httpcomponents" % "httpclient" % "4.5.2",
     "org.apache.httpcomponents" % "httpcore" % "4.4.4",
     "org.scalatest" %% "scalatest" % "3.0.0" % Test,
-    "com.h2database" % "h2" % "1.4.196" % Test
-
+    "com.h2database" % "h2" % "1.4.196" % Test,
+    "org.eclipse.jetty" % "jetty-servlet" % "9.4.11.v20180605",
+    "org.eclipse.jetty" % "jetty-server" % "9.4.11.v20180605",
+    "org.eclipse.jetty" % "jetty-util" % "9.4.11.v20180605",
+    "org.eclipse.jetty" % "jetty-security" % "9.4.11.v20180605"
   ) :+ sparkExclusion
 
   var dependencies = Seq(javaJdbc, javaEbean, cache)
