@@ -85,10 +85,15 @@
       <event_log_location_uri>webhdfs://localhost:50070/system/spark-history</event_log_location_uri>
     </params>
   -->
+
   <fetcher>
     <applicationtype>spark</applicationtype>
-    <classname>com.linkedin.drelephant.spark.fetchers.SparkFetcher</classname>
+    <classname>com.linkedin.drelephant.spark.fetchers.FSFetcher</classname>
     <params>
+      <event_log_size_limit_in_mb>150</event_log_size_limit_in_mb>
+      <event_log_location_uri>webhdfs://hadoop001.com:50070/spark2_logs</event_log_location_uri>
+      <use_rest_for_eventlogs>true</use_rest_for_eventlogs>
+      <should_process_logs_locally>true</should_process_logs_locally>
       <fetch_failed_tasks>true</fetch_failed_tasks>
     </params>
   </fetcher>
