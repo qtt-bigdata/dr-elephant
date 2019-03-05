@@ -118,6 +118,7 @@ trait SparkUtils {
           (path, codec)
       }
       case None => {
+
         val (logPath, codecName) = getLogPathAndCodecName(fs, fs.getUri.resolve(basePath.toUri), appId)
 
         (logPath, Some(compressionCodecMap.getOrElseUpdate(codecName, loadCompressionCodec(sparkConf, codecName))))
